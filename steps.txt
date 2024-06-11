@@ -1,0 +1,23 @@
+- Find a Dataset in HuggingFace : pszemraj/scientific_lay_summarisation-elife-norm
+- Find a way to download PDF and XML Data : Found (see arxiv_api.py)
+- Use the model to summarize : pszemraj/long-t5-tglobal-base-sci-simplify-elife
+- Use Embedding from HuggingFace : Alibaba-NLP/gte-large-en-v1.5
+- Use LLM from HuggingFace: microsoft/Phi-3-mini-128k-instruct
+
+########################################################################
+x- Handle XML full pipeline
+x- Handle PDF full pipeline
+x- Handle HuggingFace full pipeline
+
+x- Set the summarizer class
+
+x- Make a class to gather the data and format it into text
+
+x- Make a class to create the VectorStore
+x- Create a class to set the Embedding
+
+- Implement the DocumentRetriever Class
+- Créer une class pour le LLM
+- Une class pour le QARetriever
+- Interface streamlit (ready-to-use)
+
