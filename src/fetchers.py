@@ -8,6 +8,10 @@ from langchain.schema import Document
 logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
 
 class BiorxivDataFetcher:
+    """
+    A class to fetch data from the BioRxiv server, including metadata and PDF content,
+    for specified categories and date range
+    """
     def __init__(self, categories: List[str], start_date: str, end_date: str, n_files: int, server: str = 'biorxiv'):
         self.categories = categories
         self.start_date = start_date
@@ -25,8 +29,8 @@ class BiorxivDataFetcher:
         self.logger.debug(f"Fetching metadata from URL: {url}")
         response = requests.get(url)
         response.raise_for_status()
-        data = response.json()
-        return data
+        metadata = response.json()
+        return metadata
 
     def set_pdf_url(self, doi: str, version: int) -> str:
         """
@@ -74,6 +78,9 @@ class BiorxivDataFetcher:
         return data
 
 class GithubDataFetcher:
+    """
+    A class to fetch XML data from a specified GitHub repository.
+    """
     def __init__(self, owner: str, repo: str, path: str, n_files: int):
         self.owner = owner
         self.repo = repo
@@ -131,6 +138,9 @@ class GithubDataFetcher:
         return data
  
 class HuggingFaceDataFetcher:
+    """
+    A class to fetch and concatenate datasets from HuggingFace datasets
+    """
     def __init__(self, data_path: str):
         self.huggingface_data_path = data_path
         

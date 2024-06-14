@@ -1,48 +1,77 @@
-from langchain_huggingface import HuggingFacePipeline, HuggingFaceEndpoint
-from utils.utils import DataUtils
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
+from langchain.chains.retrieval import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 
-class LargeLanguageModel:
-    def __init__(self, llm_path: str, use_api: bool = True, max_new_tokens: int = 512, temperature: float = 0.8):
-        self.llm_path = llm_path
-        self.max_new_tokens = max_new_tokens
+import logging
+
+from langchain_community.chat_models import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+from src.utils import Prompts
+
+logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
+logging.getLogger("langchain.tracers.core").setLevel(logging.ERROR)
+
+class LLMClient:
+    """
+    A class to initialize the LLM as a client
+    """
+    def __init__(self, model: str, temperature: float):
+        self.model = model
         self.temperature = temperature
-        self.use_api = use_api
-            
-    def set_llm_api(self):
-        huggingfacehub_api_token = DataUtils.get_global_var('HUGGINGFACEHUB_API_TOKEN')
-        llm = HuggingFaceEndpoint(
-        repo_id=self.llm_path,
-        temperature=self.temperature,
-        task="text-generation",
-        max_new_tokens=self.max_new_tokens,
-        do_sample=False,
-        repetition_penalty=1.03,
-        timeout=240,
-        huggingfacehub_api_token=huggingfacehub_api_token)
-        return llm
-    
-    def set_llm_local(self):
-        llm = HuggingFacePipeline.from_model_id(
-        model_id=self.llm_path,
-        task="text-generation",
-        pipeline_kwargs=dict(max_new_tokens=self.max_new_tokens,
-                             do_sample=False,
-                             repetition_penalty=1.03,
-                             temperature=self.temperature))
-        return llm
-
+        self.logger = logging.getLogger(self.__class__.__name__)
+        
     def set_llm(self):
-        if self.use_api:
-            return self.set_llm_api()
-        else:
-            return self.set_llm_local()
+        """
+        Sets a client for interacting with the LLM
+        """
+        self.logger.info(f"Using ChatOllama with model: {self.model}, temperature: {self.temperature}")
+        return ChatOllama(model=self.model, temperature=self.temperature)
 
-class ContextSummarizer:
-    def __init__():
-        pass
+class QuestionContextualizer:
+    """
+    A class for contextualizing questions using the LLM and a retriever
+    """
+    def __init__(self, llm, retriever):
+        self.llm = llm
+        self.retriever = retriever
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", Prompts.QUESTION_CONTEXTUALIZER_SYSTEM_PROMPT),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+            ]
+        )
+
+    def contextualize_question(self):
+        """
+        Contextualizes a question using the LLM and a retriever
+        """
+        return create_history_aware_retriever(self.llm, self.retriever, self.prompt)
+
+class QuestionAnswerer:
+    """
+    A class for answering questions using the LLM and a history-aware retriever
+    """
+    def __init__(self, llm):
+        self.llm = llm
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", Prompts.QUESTION_ANSWERER_SYSTEM_PROMPT),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+            ]
+        )
+
+    def answer_question(self, history_aware_retriever):
+        """
+        Answers a question using the LLM and a history-aware retriever
+        """
+        question_answer_chain = create_stuff_documents_chain(self.llm, self.prompt)
+        return create_retrieval_chain(history_aware_retriever, question_answer_chain)
+
+
     
-class QA:
+if __name__ == "__main__":
     pass
 
-class Chat:
-    pass
