@@ -7,7 +7,7 @@ class Embedder:
     """
     A class to handle the initialization and configuration of an embedding model from HuggingFace
     """
-    def __init__(self, device: str, embedding_model_path: str):
+    def __init__(self, device, embedding_model_path):
         self.model_name = embedding_model_path
         self.device = device
         self.logger = logging.getLogger(self.__class__.__name__)

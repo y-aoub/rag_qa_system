@@ -1,26 +1,24 @@
 
-import logging
 from src.fetchers import BiorxivDataFetcher, GithubDataFetcher, HuggingFaceDataFetcher
 from src.handlers import PDFDataHandler, XMLDataHandler, ParquetDataHandler, DocumentCreator
 from src.summarizer import TextSummarizer
 from src.vector_store import VectorStoreBuilder, VectorStoreGdown
 from src.utils import LocalPaths, HuggingFacePaths
+import logging
 
 logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
-
 
 class DataPipeline:
     """
     A class to handle the end-to-end data processing pipeline, including data fetching,
     processing, and optionally building or downloading a vector store
     """
-    def __init__(self, n_files, embeddings, embeddings_device: str, build_vector_store: bool = False):
+    def __init__(self, n_files, embeddings, build_vector_store=False):
         self.n_files = n_files
         self.embeddings = embeddings
-        self.embeddings_device = embeddings_device
         self.build_vector_store = build_vector_store
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info(f"DataPipeline initialized with n_files: {self.n_files}, embeddings: {self.embeddings}, embedding_device: {self.embeddings_device}, build_vector_store: {self.build_vector_store}")
+        self.logger.info(f"DataPipeline initialized with n_files: {self.n_files}, build_vector_store: {self.build_vector_store}")
     
     def run_data_fetchers(self):
         """

@@ -1,5 +1,4 @@
 import requests
-from typing import List, Dict
 import logging
 from langchain_community.document_loaders import PyMuPDFLoader
 from datasets import load_dataset, concatenate_datasets
@@ -12,7 +11,7 @@ class BiorxivDataFetcher:
     A class to fetch data from the BioRxiv server, including metadata and PDF content,
     for specified categories and date range
     """
-    def __init__(self, categories: List[str], start_date: str, end_date: str, n_files: int, server: str = 'biorxiv'):
+    def __init__(self, categories, start_date, end_date, n_files, server='biorxiv'):
         self.categories = categories
         self.start_date = start_date
         self.end_date = end_date
@@ -21,7 +20,7 @@ class BiorxivDataFetcher:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info(f"BiorxivFetcher initialized with categories {self.categories}, start_date: {self.start_date}, end_date: {self.end_date}, n_files: {self.n_files}")
 
-    def get_metadata(self, cursor: int = 0) -> Dict:
+    def get_metadata(self, cursor=0):
         """
         Fetches data from the biorxiv API for the given server, date range, and cursor
         """
@@ -32,7 +31,7 @@ class BiorxivDataFetcher:
         metadata = response.json()
         return metadata
 
-    def set_pdf_url(self, doi: str, version: int) -> str:
+    def set_pdf_url(self, doi, version):
         """
         Builds the PDF URL from the DOI and version of the paper
         """
@@ -40,7 +39,7 @@ class BiorxivDataFetcher:
         self.logger.debug(f"Constructed PDF URL: {pdf_url}")
         return pdf_url
     
-    def fetch_pdf_content(self, pdf_url: str) -> str:
+    def fetch_pdf_content(self, pdf_url):
         """
         Fetches the content (page by page) from a PDF file
         """
@@ -48,7 +47,7 @@ class BiorxivDataFetcher:
         data = loader.load()
         return data
 
-    def fetch_data(self) -> List[Dict[str, Document]]:
+    def fetch_data(self):
         """
         Fetches metadata, PDF URLs, and text content from PDFs for the specified categories and date range, stopping when the specified number of files is reached
         """
@@ -81,7 +80,7 @@ class GithubDataFetcher:
     """
     A class to fetch XML data from a specified GitHub repository.
     """
-    def __init__(self, owner: str, repo: str, path: str, n_files: int):
+    def __init__(self, owner, repo, path, n_files):
         self.owner = owner
         self.repo = repo
         self.path = path
@@ -89,13 +88,13 @@ class GithubDataFetcher:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info(f"GithubFetcher initialized with owner: {self.owner}, repo: {self.repo}, path: {self.path}")
         
-    def set_api_url(self) -> str:
+    def set_api_url(self):
         """
         Builds the API URL from owner, repo and path
         """
         return f"https://api.github.com/repos/{self.owner}/{self.repo}/contents/{self.path}"
 
-    def get_filenames(self) -> List[Dict]:
+    def get_filenames(self):
         """
         Lists files from a GitHub repository for the given path and file extension
         """
@@ -108,7 +107,7 @@ class GithubDataFetcher:
         self.logger.info(f"Found {len(filtered_files)}/{len(files)} XML files in the repository")
         return filtered_files
 
-    def fetch_xml_content(self, file_url: str) -> str:
+    def fetch_xml_content(self, file_url):
         """
         Fetches the XML content of a file from a given URL
         """
@@ -119,7 +118,7 @@ class GithubDataFetcher:
         self.logger.info(f"Fetched content from {file_url} (length: {len(content)} characters)")
         return content
     
-    def fetch_data(self) -> List[Dict[str, str]]:
+    def fetch_data(self):
         """
         Fetches the content of the first `n_files` files from the repository.
         """
@@ -141,7 +140,7 @@ class HuggingFaceDataFetcher:
     """
     A class to fetch and concatenate datasets from HuggingFace datasets
     """
-    def __init__(self, data_path: str):
+    def __init__(self, data_path):
         self.huggingface_data_path = data_path
         
     def concatenate_data(self, dataset):

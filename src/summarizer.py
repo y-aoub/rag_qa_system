@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
 
 class TextSummarizer:
-    def __init__(self, force_cache, token_batch_length: int = 2048):
+    def __init__(self, force_cache, token_batch_length):
         """
         A class used to summarize text using a pre-trained transformer model
         """

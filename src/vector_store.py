@@ -1,16 +1,13 @@
 from langchain_community.vectorstores import Chroma
-from langchain.schema import Document
-from langchain_core.embeddings import Embeddings
 from src.utils import DataUtils
 from pathlib import Path
-from typing import List
 import gdown
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
 
 class VectorStoreBuilder:
-    def __init__(self, documents: List[Document], embeddings: Embeddings, vector_store_dir_path: str):
+    def __init__(self, documents, embeddings, vector_store_dir_path):
         self.documents = documents
         self.embeddings = embeddings
         self.vector_store_path = str(vector_store_dir_path)
@@ -23,7 +20,7 @@ class VectorStoreBuilder:
 
 
 class VectorStoreGdown:
-    def __init__(self, vector_store_dir_path: Path):
+    def __init__(self, vector_store_dir_path):
         self.vector_store_dir_path = str(vector_store_dir_path)
         self.google_drive_chroma_url = DataUtils.get_global_var("GOOGLE_DRIVE_CHROMA_URL")
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -69,8 +66,8 @@ class VectorStoreGdown:
             pass
     
 class DocumentRetriever:
-    def __init__(self, embeddings: Embeddings, vector_store_dir_path: str, k: int=1, lambda_mult: int= 0.5):
-        self.search_kwargs = {'k': k, 'fetch_k': k+3, 'lambda_mult': lambda_mult}
+    def __init__(self, embeddings, vector_store_dir_path, k=1, lambda_mult= 0.5):
+        self.search_kwargs = {'k': k, 'fetch_k': k+4, 'lambda_mult': lambda_mult}
         self.vector_store = Chroma(persist_directory=str(vector_store_dir_path), embedding_function=embeddings)
         
     def set_retriever(self):

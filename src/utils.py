@@ -1,22 +1,44 @@
 import os
-from typing import List, Dict, Any
 from pathlib import Path
 from dotenv import load_dotenv
+import argparse
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
 
+class ArgsParser:
+    """
+    A class to parse command-line arguments for a data processing pipeline
+    """
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description="Pipeline Arguments")
+
+        # Add arguments
+        self.parser.add_argument('--embedding_device', type=str, default='cpu',
+                                 choices=['cpu', 'cuda'], help="Device for embeddings (default: cpu)")
+        self.parser.add_argument('--n_files', type=int, default=5,
+                                 help="Number of PDFs and XMLs to extract and process (default: 5)")
+        self.parser.add_argument('--build_vector_store', action='store_true',
+                                 help="Flag to build Chroma vector store after data processing (default: False)")
+
+    def parse_args(self):
+        """
+        Parse command-line arguments
+        """
+        return self.parser.parse_args()
+
+
 class DataUtils:
     
     @staticmethod
-    def merge_data(*args: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
+    def merge_data(*args):
         merged_data = []
         for dataset in args:
             merged_data.extend(dataset)
         return merged_data
     
     @staticmethod
-    def get_global_var(global_var_name: str) -> str:
+    def get_global_var(global_var_name):
         load_dotenv()
         return os.getenv(global_var_name)
     
@@ -29,7 +51,7 @@ class HuggingFacePaths:
     DATA_PATH = 'pszemraj/scientific_lay_summarisation-elife-norm'
     EMBEDDING_MODEL_PATH = 'Alibaba-NLP/gte-large-en-v1.5'
     SUMMARIZER_MODEL_PATH = 'pszemraj/long-t5-tglobal-base-sci-simplify-elife'
-
+    
 class OllamaPaths:
     LLM_PATH = 'phi3:mini-128k'
 

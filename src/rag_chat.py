@@ -11,7 +11,7 @@ class ChatHistoryManager:
         self.store = {}
         
 
-    def get_session_history(self, session_id: str):
+    def get_session_history(self, session_id):
         """
         Gets the chat history for a given session ID (memory buffer)
         """
@@ -50,7 +50,7 @@ class RAGChatBot:
     """
     A class for managing a chatbot based on a RAG system to answer questions
     """
-    def __init__(self, llm, retriever: str) -> None:
+    def __init__(self, llm, retriever):
         self.chatbot = Chatbot(llm, retriever)
         
     def get_conversational_rag_chain(self):
@@ -59,7 +59,7 @@ class RAGChatBot:
         """
         return self.chatbot.conversational_rag_chain
      
-    def get_response(self, query, session_id: str = "1"):
+    def get_response(self, query, session_id="1"):
         """
         Gets a response to a query from the chatbot.
         """
@@ -73,13 +73,14 @@ class RAGChatBot:
             print(chunk.get('answer', ''), end='', flush=True)
         print('\n')
         
-    def get_response_loop(self, session_id: str = "1") -> None:
+    def get_response_loop(self, session_id="1") -> None:
         """
         Starts a loop that continuously prompts the user for input and prints the chatbot's response (used to test on the command line)
         """
+        print("\n################ Start Chatting ! ################\n")
         while True:
-            query = input("You: ")
-            print("Assistant: ", end='')
+            query = input("→ You: ")
+            print("→ Assistant: ", end='', flush=True)
             self.stream_response(self.get_response(query=query, session_id=session_id))
                 
             
