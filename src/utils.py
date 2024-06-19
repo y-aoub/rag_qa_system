@@ -48,8 +48,13 @@ class Settings(BaseSettings):
 
     OLLAMA_LLM_PATH: str = 'phi3:mini-128k'
 
-    GOOGLE_DRIVE_CHROMA_URL: str = DataUtils.get_global_var("GOOGLE_DRIVE_CHROMA_URL")
-    HUGGINGFACE_API_TOKEN: str = DataUtils.get_global_var("HUGGINGFACE_API_TOKEN")
+    try:
+        import streamlit as st
+        GOOGLE_DRIVE_CHROMA_URL: str = st.secrets["GOOGLE_DRIVE_CHROMA_URL"]
+        HUGGINGFACE_API_TOKEN: str = st.secrets["HUGGINGFACE_API_TOKEN"]
+    except ImportError:
+        GOOGLE_DRIVE_CHROMA_URL: str = DataUtils.get_global_var("GOOGLE_DRIVE_CHROMA_URL")
+        HUGGINGFACE_API_TOKEN: str = DataUtils.get_global_var("HUGGINGFACE_API_TOKEN")
 
     class Config:
         env_file = '.env'
