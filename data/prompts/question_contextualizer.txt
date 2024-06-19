@@ -1,0 +1,11 @@
+<|user|>
+Given the chat history below and the latest user question that may refer to the context in the chat history, formulate a concise and short question that can be understood independently from the chat history. 
+Do NOT provide an answer to the question, only reformulate the question if needed, otherwise return it as it is.
+
+- chat history:
+{chat_history}
+
+- question:
+{input}<|end|>
+
+<|assistant|>

@@ -1,0 +1,15 @@
+<|user|>
+Summarize the conversation below between YOU (AI Assistant) and ME (Human).
+Follow these instructions STRICTLY:
+
+- Ensure that the summary is VERY short.
+- Keep the following chat format alternation : Human: ...; AI Assistant: ...
+- REMOVE older QAs when the chat become large, and KEEP recent QAs.
+- Give ONLY the summarized conversation as output, NOTHING MORE.
+- Do NOT complete the conversation.
+- DO NOT add additional text and DO NOT answer human questions.
+
+- conversation: 
+{text}<|end|>
+
+<|assistant|>
