@@ -1,5 +1,4 @@
 from langchain_community.vectorstores import Chroma
-from src.utils import DataUtils
 from pathlib import Path
 import gdown
 import logging
@@ -7,25 +6,36 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
 
 class VectorStoreBuilder:
-    def __init__(self, documents, embeddings, vector_store_dir_path):
+    """
+    Class for building and a Chroma vector store from documents
+    """
+    def __init__(self, documents, embedding_function, vector_store_dir_path):
         self.documents = documents
-        self.embeddings = embeddings
-        self.vector_store_path = str(vector_store_dir_path)
+        self.embedding_function = embedding_function
+        self.vector_store_dir_path = vector_store_dir_path
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def build_vector_store(self):
-        self.logger.info(f"Creating vectorstore ...")
-        Chroma.from_documents(self.documents, self.embeddings, persist_directory=self.vector_store_path)      
-        self.logger.info(f"Vectorsctore created successfully and saved to {self.vector_store_path}")
+        """
+        Builds the vector store and saves it to the specified directory.
+        """
+        Chroma.from_documents(self.documents, self.embedding_function, persist_directory=self.vector_store_dir_path)      
+        self.logger.info(f"Vectorsctore created successfully and saved to {self.vector_store_dir_path}")
 
 
 class VectorStoreGdown:
-    def __init__(self, vector_store_dir_path):
-        self.vector_store_dir_path = str(vector_store_dir_path)
-        self.google_drive_chroma_url = DataUtils.get_global_var("GOOGLE_DRIVE_CHROMA_URL")
+    """
+    Class for downloading and verifying the integrity of the vector store
+    """
+    def __init__(self, vector_store_dir_path, google_drive_chroma_url):
+        self.vector_store_dir_path = vector_store_dir_path
+        self.google_drive_chroma_url = google_drive_chroma_url
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def check_vector_store_integrity(self):
+        """
+        Checks the integrity of the vector store by verifying the presence of all the necessary files
+        """
         parent_folder = Path(self.vector_store_dir_path)
         root_files = ['chroma.sqlite3']
         sub_files = ['data_level0.bin', 'header.bin', 'index_metadata.pickle', 'length.bin', 'link_lists.bin']
@@ -37,7 +47,7 @@ class VectorStoreGdown:
         for file in root_files:
             file_path = parent_folder / file
             if not file_path.is_file():
-                self.logger.warning(f"The required file {file_path} is missing.")
+                self.logger.warning(f"The required file {file_path} is missing")
                 return False
 
         sub_folder = None
@@ -54,10 +64,13 @@ class VectorStoreGdown:
             self.logger.warning(f"No subfolder was found in {parent_folder}")
             return False
 
-        self.logger.info("All required files and folders were found")
+        self.logger.info("All required files and folders of the vector store were found")
         return True
     
     def download_vector_store(self):
+        """
+        Downloads the vector store from the drive if the existing one is incomplete
+        """
         vector_store_integrity = self.check_vector_store_integrity()
         if not vector_store_integrity:
             self.logger.info("The existing vector store is incomplete. It will be redownloaded and overwritten")
@@ -66,13 +79,16 @@ class VectorStoreGdown:
             pass
     
 class DocumentRetriever:
-    def __init__(self, embeddings, vector_store_dir_path, k=1, lambda_mult= 0.5):
-        self.search_kwargs = {'k': k, 'fetch_k': k+4, 'lambda_mult': lambda_mult}
-        self.vector_store = Chroma(persist_directory=str(vector_store_dir_path), embedding_function=embeddings)
+    """
+    Class for setting up a document retriever
+    """
+    def __init__(self, embedding_function, vector_store_dir_path, n_docs, lambda_mult= 0.5):
+        self.search_kwargs = {'k': n_docs, 'fetch_k': n_docs+4, 'lambda_mult': lambda_mult}
+        self.vector_store = Chroma(persist_directory=vector_store_dir_path, embedding_function=embedding_function)
         
     def set_retriever(self):
+        """
+        Sets the retriever with MMR as a search metric
+        """
         retriever = self.vector_store.as_retriever(search_type="mmr", search_kwargs=self.search_kwargs)
         return retriever
-    
-if __name__ == "__main__":
-    pass

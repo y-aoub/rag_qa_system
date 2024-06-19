@@ -7,19 +7,19 @@ class Embedder:
     """
     A class to handle the initialization and configuration of an embedding model from HuggingFace
     """
-    def __init__(self, device, embedding_model_path):
-        self.model_name = embedding_model_path
-        self.device = device
+    def __init__(self, embedding_device, hf_embedding_model_path):
+        self.hf_embedding_model_path = hf_embedding_model_path
+        self.embedding_device = embedding_device
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def set_embeddings(self):
+    def set_embedding_function(self):
         """
-        Initialize and return the HuggingFaceEmbeddings object with specified model name, device, and configuration parameters
+        Initializes and return the HuggingFaceEmbeddings corresponding to an embedding function object with specified model name, device, and configuration parameters
         """
-        model_kwargs = {'device': self.device, 'trust_remote_code': True}
+        model_kwargs = {'device': self.embedding_device, 'trust_remote_code': True}
         encode_kwargs = {'normalize_embeddings': True}
-        embeddings = HuggingFaceEmbeddings(model_name=self.model_name, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs)
-        self.logger.info(f"Embedding model {self.model_name} initialized with model_kwargs: {model_kwargs}, encode_kwargs: {encode_kwargs}")
+        embeddings = HuggingFaceEmbeddings(model_name=self.hf_embedding_model_path, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs)
+        self.logger.info(f"Embedding model {self.hf_embedding_model_path} from HuggingFace initialized with model_kwargs: {model_kwargs}, encode_kwargs: {encode_kwargs}")
         return embeddings
         
 if __name__ == "__main__":

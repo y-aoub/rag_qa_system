@@ -152,7 +152,7 @@ class ParquetDataHandler:
 
 class DocumentCreator:
     """
-    A class to create transform processed data items into docuemnts 
+    A class to create transform processed data items into documents 
     """
     def __init__(self, *args):
         self.processed_data = DataUtils.merge_data(*args)

@@ -2,7 +2,6 @@ import requests
 import logging
 from langchain_community.document_loaders import PyMuPDFLoader
 from datasets import load_dataset, concatenate_datasets
-from langchain.schema import Document
 
 logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
 
