@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import argparse
 from pydantic_settings import BaseSettings
 from typing import Dict
+import streamlit as st
+
 
 class DataUtils:
     """
@@ -49,7 +51,6 @@ class Settings(BaseSettings):
     OLLAMA_LLM_PATH: str = 'phi3:mini-128k'
 
     try:
-        import streamlit as st
         GOOGLE_DRIVE_CHROMA_URL: str = st.secrets["GOOGLE_DRIVE_CHROMA_URL"]
         HUGGINGFACE_API_TOKEN: str = st.secrets["HUGGINGFACE_API_TOKEN"]
     except ImportError:
