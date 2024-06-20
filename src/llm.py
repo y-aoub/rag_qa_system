@@ -44,6 +44,8 @@ class LLMClient:
         Sets a client for interacting with the LLM
         """
         if self.use_ollama:
+            ollama_down = OllamaDown(llm_path=self.llm_path)
+            ollama_down.manage_ollama()
             return self.set_llm_from_ollama()
         else:
             return self.set_llm_from_huggingface_hub()
@@ -52,9 +54,9 @@ class OllamaDown:
     """
     Manages the installation and setup of Ollama and the required used LLM
     """
-    def __init__(self, model, url="https://ollama.com/install.sh"):
+    def __init__(self, llm_path, url="https://ollama.com/install.sh"):
         self.url = url
-        self.model = model
+        self.llm_path = llm_path
         self.logger = logging.getLogger(self.__class__.__name__)
 
 
@@ -95,8 +97,8 @@ class OllamaDown:
                                 text=True,
                                 capture_output=True)
         models = result.stdout.strip().split('\n')
-        if self.model in models:
-            self.logger.info(f"Model '{self.model}' is already installed")
+        if self.llm_path in models:
+            self.logger.info(f"Model '{self.llm_path}' is already installed")
             return True
         else:
             return False
@@ -105,20 +107,20 @@ class OllamaDown:
         """
         Pulls the specified LLM from Ollama if it is not already installed
         """
-        result = subprocess.run(f"ollama pull {self.model}",
+        result = subprocess.run(f"ollama pull {self.llm_path}",
                                 shell=True,
                                 text=True,
                                 capture_output=True)
         if result.returncode == 0:
-            self.logger.info(f"Model '{self.model}' has been pulled successfully")
+            self.logger.info(f"Model '{self.llm_path}' has been pulled successfully")
         else:
-            self.logger.warning(f"Failed to pull model '{self.model}' from Ollama models")
+            self.logger.warning(f"Failed to pull model '{self.llm_path}' from Ollama models")
 
     def manage_ollama(self):
         """
         Manages the installation process of Ollama and the specified LLM
         """
-        ollama_down = OllamaDown(model=self.model)
+        ollama_down = OllamaDown(model=self.llm_path)
         # check if Ollama is installed, if not, download it
         if not ollama_down.is_ollama_installed():
             ollama_down.download_ollama()
