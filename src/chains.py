@@ -31,7 +31,7 @@ class RetrieverChain:
         """
         Creates a history-aware retriever chain using an LLM, a retriever, and a prompt
         """
-        self.logger.info("RetrieverChain initialized successfuly")
+        self.logger.info("RetrieverChain initialized successfully")
         return create_history_aware_retriever(
             self.llm,
             self.retriever,
@@ -63,7 +63,7 @@ class ConversationRAGChain:
         Creates a retrieval chain by combining a retriever chain and a document processing chain
         """
         stuff_document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.logger.info("ConversationRAGChain initialized successfuly")
+        self.logger.info("ConversationRAGChain initialized successfully")
         return create_retrieval_chain(self.retriever_chain, stuff_document_chain)
 
     def get_response(self, chat_history, user_query):
@@ -98,7 +98,7 @@ class ChatSummarizerChain:
         """
         Creates a chain that processes and summarizes chat text
         """
-        self.logger.info("ChatSummarizerChain initialized successfuly")
+        self.logger.info("ChatSummarizerChain initialized successfully")
         return self.prompt | self.llm | StrOutputParser()
 
     def summarize(self, text):
