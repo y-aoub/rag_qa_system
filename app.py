@@ -36,6 +36,7 @@ def initialize_streamlit_app():
     huggingface_api_token = paths_as_strings["HUGGINGFACE_API_TOKEN"]
     hf_summarizer_model_path = paths_as_strings["HF_SUMMARIZER_MODEL_PATH"]
     hf_data_path = paths_as_strings["HF_DATA_PATH"]
+    google_drive_chroma_url = paths_as_strings["GOOGLE_DRIVE_CHROMA_URL"]
     
     # set embedding function
     embedder = Embedder(embedding_device=embedding_device, hf_embedding_model_path=hf_embedding_model_path)
@@ -44,7 +45,8 @@ def initialize_streamlit_app():
     # run the data pipeline (fetch data -> handle data -> create vector store)
     data_pipeline = DataPipeline(n_files=n_files, embedding_function=embedding_function,
                                  hf_data_path=hf_data_path, hf_summarizer_model_path=hf_summarizer_model_path,
-                                 vector_store_dir_path=vector_store_dir_path, build_vector_store=build_vector_store)
+                                 vector_store_dir_path=vector_store_dir_path, google_drive_chroma_url=google_drive_chroma_url,
+                                 build_vector_store=build_vector_store)
     data_pipeline.run_pipeline()
     
     # init a chatbot instantance
