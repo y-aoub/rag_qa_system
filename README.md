@@ -1,6 +1,6 @@
 ## Overview
 
-This project is a technical assessment that consists of implementing a RAG-based chatbot system to QA data from eLife and BioRxiv. (deployed here: https://ifqeuyddicvujnpsubx9bc.streamlit.app/)
+This project is a technical assessment that consists of implementing a RAG-based chatbot system to QA data from eLife and BioRxiv (deployed here: https://ifqeuyddicvujnpsubx9bc.streamlit.app/).
 
 ### Packages and Models
 
@@ -27,8 +27,8 @@ HuggingFace serves multiple roles in this project:
 
 #### Streamlit
 
-Streamlit provides an easy-to-build interface, facilitating easy interaction with the chat application, like this one.
 
+Streamlit provides an intuitive interface for easy interaction with the chat application and simplifies deployment through the Streamlit Hub, offering free hosting for Streamlit apps.
 
 ## Data
 
@@ -50,28 +50,36 @@ The dataset consists of scientific articles collected from two primary sources: 
 
 ## Setup
 
+### Clone the Repository
+First, clone the project repository to your local machine using the following command:
+
+```bash
+git clone https://github.com/y-aoub/rag_qa_system/tree/master
+cd rag_qa_system
+```
+
 ### Creating a Virtual Environment
 Create a virtual environment to isolate package dependencies. Use one of the following methods:
 
 - Using Python's built-in venv module:
-  ```
+  ```bash
   python -m venv [environment_path]
   ```
   
 - Using the virtualenv package:
-  ```
+  ```bash
   virtualenv [environment_path]
   ```
 
 ### Activating the Environment
 Activate the virtual environment by running:
-```
+```bash
 source [environment_path]/bin/activate
 ```
 
 ### Installing Dependencies
 Install the required Python packages using:
-```
+```bash
 pip install -r requirements.txt
 ```
 ### Set HuggingFace API Token
@@ -92,39 +100,41 @@ This chatbot can be accessed using two different interfaces: a command-line inte
 You can interact with the chatbot directly from the command line by running:
 
 ```bash
-python main.py --embedding_device cuda --n_files 10 --build_vector_store
+python main.py [--embedding_device] [--n_files] [--n_docs] [--build_vector_store] [--use_ollama]
 ```
 
-- `--embedding_device`: Specifies the device for embeddings (cpu or cuda). Defaults to cpu.
+- `--embedding_device`: Device for embeddings (default is 'cpu'). Options are 'cpu' and 'cuda'.
 
-- `--n_files`: Number of PDFs and XMLs to process. Defaults to 5.
+- `--n_files`: Number of PDFs and XMLs to extract and process (default is 5).
 
-- `--build_vector_store`: Boolean flag to build CHroma vector store after processing. Defaults to False.
+- `--n_docs`: Number of documents to retrieve through MMR similarity search (default is 2).
+
+- `--build_vector_store`: Flag to build Chroma vector store after fetching, processing, and parsing the data (default is False; if not specified, Chroma vector store will be checked for existence and integrity, and downloaded from the drive if necessary).
+
+- `--use_ollama`: Flag to use Ollama as the LLM server; otherwise, it defaults to using the HuggingFace API Inference Endpoint (default is False).
 
 ### Running the Streamlit App
 
 Alternatively, you can use a web-based interface to interact with the chatbot. Run the following command to start the Streamlit app:
 
 ```bash
-streamlit run app.py -- --embedding_device cuda --n_files 10 --build_vector_store
+streamlit run app.py [-- [--embedding_device] [--n_files] [--n_docs] [--build_vector_store] [--use_ollama]]
 ```
-
-This command runs the Streamlit application with CUDA-enabled GPU for the embedding model, processing 5 PDFs and 5 XMLs, and building the Chroma vector store after fetching, processing, and parsing the raw data.
+ 
+The application is deployed on a Streamlit Cloud instance and can be tested [here](https://ifqeuyddicvujnpsubx9bc.streamlit.app/).
 
 ## Architecture
 
-### Retriever Chain
+![Architecture](architecture.png)
 
-### Conversation RAG Chain
-
-### Memory Buffer and Chat Summarizer Chain
-In our chat system, the memory buffer starts empty at the beginning of each conversation. After each exchange, the buffer is updated in this format:
+### Chat History Summarizer Chain and Memory Buffer
+In this chat system, the memory buffer starts empty at the beginning of each conversation. After each exchange, the buffer is updated in this format:
 
 ```
-* Human: What is insomnia?
-* AI Assistant: Insomnia is a sleep disorder where individuals have difficulty falling or staying asleep, affecting daytime functioning.
-* Human: Who can suffer from insomnia?
-* AI Assistant: Insomnia can affect anyone, regardless of age, gender, or background.
+- Human: What is insomnia?
+- AI Assistant: Insomnia is a sleep disorder where individuals have difficulty falling or staying asleep, affecting daytime functioning.
+- Human: Who can suffer from insomnia?
+- AI Assistant: Insomnia can affect anyone, regardless of age, gender, or background.
 ...
 ```
 
@@ -132,4 +142,60 @@ Since microsoft/Phi-3-mini-4k-instruct has a context window of 4096 tokens, whic
 
 The chat history is important for tracking topic changes that can be made by the user. To achieve this, the approach here involves using the same LLM to summarize the chat history after each interaction with the chatbot; this process gradually reduces the size of the chat history and gives less importance to older interactions compared to newer ones. 
 
-For details about the instructions given to the model to summarize the chat history, refer to this [prompt template](https://github.com/y-aoub/rag_qa_system/blob/master/data/prompts/chat_summarizer.txt).
+The summary of the chat history will look something like this:
+
+```
+- Human: What is insomnia?
+- AI Assistant: Difficulty sleeping, affecting daytime function.
+- Human: Who can suffer from insomnia?
+- AI Assistant: Anyone.
+...
+```
+
+For details about the instructions given to the model to summarize the chat history, refer to this [prompt template](data/prompts/chat_summarizer.txt).
+
+### History Aware Retriever Chain
+The history aware retriever chain contextualizes user questions taking into account the summarized chat history if it is not empty. This ensures that references to previous interactions are understood and handled by the chatbot accurately. The process is as follows:
+
+First, we define a sub-chain that takes historical messages and the latest user question, reformulating the question if it references any information from past interactions.
+
+For this sub-process a [prompt template](data/prompts/question_contextualizer.txt) is used including a placeholder for the chat history and the initial user query. The chat history is inserted after the system instructions and the initila user query is given after the chat history. The result is a contextualized query.
+
+Here is an example of this sub-process:
+
+```
+* Chat history: 
+  - Human: What is insomnia?
+  - AI Assistant: Insomnia is a sleep disorder where individuals have difficulty falling or staying asleep.
+* User query: Who can suffer from it?
+* Reformulated user query: Who can suffer from insomnia?
+```
+
+The contextualized query is given to the retriever, which use the maximal marginal relevance similarity to retrieve the relevant documents to the contextualised query (default: 2 documents).
+
+### Question Answer Chain
+The question answer chain is the main component of the architecture, it uses a [prompt template](data/prompts/question_answerer.txt) with a place holder for the retrieved documents as well as the summarized chat history and the user query.
+
+The output is a formulated answer generated by the LLM considering the retrieved documents used as a context as well as the summarized chat history.
+
+Here is an example of all the necessary components used to answer a question asked by the user during a chat session:
+
+```
+* Chat history: 
+  - Human: What is insomnia?
+  - AI Assistant: Insomnia is a sleep disorder where individuals have difficulty falling or staying asleep.
+* Summarized chat history: 
+  - Human: What is insomnia?
+  - AI Assistant: Difficulty sleeping, affecting daytime function.
+
+* User query: Who can suffer from it?
+* Reformulated user query: Who can suffer from insomnia?
+
+* Retrieved context:
+  - People often feel fatigued and sleepy when they are sick. Other animals also show signs of sleepiness when ill – they stop eating, move less, and are less responsive to changes in their environment. Sickness-induced sleep helps both people and other animals to ...
+  - The experiments sifted through genetic mutations to determine which ones cause the worms not to fall asleep when FLP-13 is released. This revealed that worms with a mutation that causes them to lack a receptor protein called DMSR-1 do not become sleepy in response to FLP-13 ...
+
+* Answer: Insomnia can affect anyone, regardless of age, gender, or background.
+```
+
+The process ensures that each user query is answered with consideration of the chat history for context, relevant documents are retrieved to provide accurate information, and the final answer is synthesized to be as informative as possible. 
