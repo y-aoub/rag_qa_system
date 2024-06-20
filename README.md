@@ -1,21 +1,21 @@
-## Overview
+# Overview
 
 This project is a technical assessment that consists of implementing a RAG-based chatbot system to QA data from eLife and BioRxiv (deployed here: https://ifqeuyddicvujnpsubx9bc.streamlit.app/).
 
-### Packages and Models
+## Packages and Models
 
-#### LangChain
+### LangChain
 
 LangChain is used to build the core pipeline for the RAG process, the Chatbot, and their integration. It also handles PDF parsing, document transformation, chat history handling, and prompt handling.
 
-#### Ollama
+### Ollama
 
 Ollama was selected due to my computer's limited computing capacity. It simplifies the use of quantized models, improving efficiency without significantly compromising model quality or performance.
 
 - **LLM Choice**: [microsoft/Phi-3-mini-128k-instruct](https://ollama.com/library/phi3:3.8b-instruct) is chosen for its compact size and high performance. It supports a large context window of around 128k tokens, ideal for maintaining a large memory of contextual information in a chat scenario.
 
 
-#### HuggingFace
+### HuggingFace
 
 HuggingFace serves multiple roles in this project:
   
@@ -25,12 +25,12 @@ HuggingFace serves multiple roles in this project:
 
 - **LLM Choice**: [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) is used via the HuggingFace Inference Endpoint providing fast inference. However, it comes with a drawback: its context window is limited to 4096 tokens, whereas Ollama offers Phi-3-mini with a context window of 128k tokens.
 
-#### Streamlit
+### Streamlit
 
 
 Streamlit provides an intuitive interface for easy interaction with the chat application and simplifies deployment through the Streamlit Hub, offering free hosting for Streamlit apps.
 
-## Data
+# Data
 
 The dataset consists of scientific articles collected from two primary sources: [BioRxiv](https://www.biorxiv.org/) and [eLife](https://elifesciences.org/). The data is sourced from three distinct repositories:
 
@@ -48,9 +48,9 @@ The dataset consists of scientific articles collected from two primary sources: 
    - Data Format: XML
 
 
-## Setup
+# Setup
 
-### Clone the Repository
+## Clone the Repository
 First, clone the project repository to your local machine using the following command:
 
 ```bash
@@ -58,7 +58,7 @@ git clone https://github.com/y-aoub/rag_qa_system/tree/master
 cd rag_qa_system
 ```
 
-### Creating a Virtual Environment
+## Creating a Virtual Environment
 Create a virtual environment to isolate package dependencies. Use one of the following methods:
 
 - Using Python's built-in venv module:
@@ -71,18 +71,18 @@ Create a virtual environment to isolate package dependencies. Use one of the fol
   virtualenv [environment_path]
   ```
 
-### Activating the Environment
+## Activating the Environment
 Activate the virtual environment by running:
 ```bash
 source [environment_path]/bin/activate
 ```
 
-### Installing Dependencies
+## Installing Dependencies
 Install the required Python packages using:
 ```bash
 pip install -r requirements.txt
 ```
-### Set HuggingFace API Token
+## Set HuggingFace API Token
 
 In the `.env` file, add your HuggingFace API token as follows:
 
@@ -91,11 +91,11 @@ HUGGINGFACE_API_TOKEN = "your_hf_api_token"
 ```
 Refer to this [link](https://huggingface.co/docs/api-inference/en/quicktour#get-your-api-token) to see how to generate an API token.
 
-## Run
+# Run
 
 This chatbot can be accessed using two different interfaces: a command-line interface and a web-based interface using Streamlit.
 
-### Running the CLI
+## Running the CLI
 
 You can interact with the chatbot directly from the command line by running:
 
@@ -113,7 +113,7 @@ python main.py [--embedding_device] [--n_files] [--n_docs] [--build_vector_store
 
 - `--use_ollama`: Flag to use Ollama as the LLM server; otherwise, it defaults to using the HuggingFace API Inference Endpoint (default is False).
 
-### Running the Streamlit App
+## Running the Streamlit App
 
 Alternatively, you can use a web-based interface to interact with the chatbot. Run the following command to start the Streamlit app:
 
@@ -123,11 +123,11 @@ streamlit run app.py [-- [--embedding_device] [--n_files] [--n_docs] [--build_ve
  
 The application is deployed on a Streamlit Cloud instance and can be tested [here](https://ifqeuyddicvujnpsubx9bc.streamlit.app/).
 
-## Architecture
+# Architecture
 
 ![Architecture](architecture.png)
 
-### Chat History Summarizer Chain and Memory Buffer
+## Chat History Summarizer Chain and Memory Buffer
 In this chat system, the memory buffer starts empty at the beginning of each conversation. After each exchange, the buffer is updated in this format:
 
 ```
@@ -154,7 +154,7 @@ The summary of the chat history will look something like this:
 
 For details about the instructions given to the model to summarize the chat history, refer to this [prompt template](data/prompts/chat_summarizer.txt).
 
-### History Aware Retriever Chain
+## History Aware Retriever Chain
 The history aware retriever chain contextualizes user questions taking into account the summarized chat history if it is not empty. This ensures that references to previous interactions are understood and handled by the chatbot accurately. The process is as follows:
 
 First, we define a sub-chain that takes historical messages and the latest user question, reformulating the question if it references any information from past interactions.
@@ -173,7 +173,7 @@ Here is an example of this sub-process:
 
 The contextualized query is given to the retriever, which use the maximal marginal relevance similarity to retrieve the relevant documents to the contextualised query (default: 2 documents).
 
-### Question Answer Chain
+## Question Answer Chain
 The question answer chain is the main component of the architecture, it uses a [prompt template](data/prompts/question_answerer.txt) with a place holder for the retrieved documents as well as the summarized chat history and the user query.
 
 The output is a formulated answer generated by the LLM considering the retrieved documents used as a context as well as the summarized chat history.
